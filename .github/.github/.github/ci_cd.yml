@@ -1,0 +1,30 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train model
+        run: python -m model.train
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+      - name: Evaluate model
+        run: python -m model.evaluate
