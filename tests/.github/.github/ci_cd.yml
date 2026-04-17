@@ -1,0 +1,48 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Train model
+        run: |
+          python -m model.train
+
+      - name: Evaluate model
+        run: |
+          python -m model.evaluate
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t mlops-azure-template:latest .
+
+      - name: Run container test
+        run: |
+          docker run --rm mlops-azure-template:latest python -m model.train
